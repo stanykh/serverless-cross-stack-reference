@@ -1,0 +1,41 @@
+service: cross-stack-demo-dynamodb-stack 
+
+frameworkVersion: ">=1.21.0 <2.0.0"
+
+custom:
+  serviceName: CrossStackDemo
+  ddbUserTable: ${self:custom.serviceName}-${opt:stage, self:provider.stage}-UserTable
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: ap-southeast-1
+  stage: dev
+  #deploymentBucket: com.stanleyyong.serverless-deployments
+
+resources:
+  Resources:
+
+    #################
+    # DynamoDB config
+    #################
+    UserTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        TableName: ${self:custom.ddbUserTable}
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S   
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+  Outputs:
+    UserTableArn:
+      Value: !GetAtt UserTable.Arn
+      Export:
+        Name: ${self:custom.ddbUserTable}Arn
+

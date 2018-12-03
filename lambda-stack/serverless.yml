@@ -1,0 +1,32 @@
+service: cross-stack-demo-lambda-stack 
+
+frameworkVersion: ">=1.21.0 <2.0.0"
+
+custom:
+  serviceName: CrossStackDemo
+  ddbUserTable: ${self:custom.serviceName}-${opt:stage, self:provider.stage}-UserTable
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  region: ap-southeast-1
+  stage: dev
+  #deploymentBucket: com.stanleyyong.serverless-deployments
+  environment:
+    DYNAMODB_USER_TABLE: ${self:custom.ddbUserTable}
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: 
+        - Fn::ImportValue: ${self:custom.ddbUserTable}Arn
+
+functions:
+  createUser:
+    handler: handler.createUser
